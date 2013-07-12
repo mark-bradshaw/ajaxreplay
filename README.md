@@ -2,7 +2,7 @@
 
 If you prefer to use live api calls in your javascript based tests, Ajax Replay is for you.  Philosophically I prefer to use live api data in my tests so that if the api responses change I can still rest assured that my application will continue to work.  Ideally api responses shouldn't change, but in the real world that is seldom the case.  Accidents happen.
 
-Ajax Replay is a simple way to allow you to use real api calls in your tests/specs, without paying the performance penalty.  If you are familiar with **[vcr](https://github.com/vcr/vcr)** for ruby, this is similar, but completely javascript/front end based.  One Ajax Replay is loaded it takes over XMLHttpRequest and from then on will automatically cache all ajax calls and responses into localstorage.  Subsequent ajax calls that match the same method+url+params will immediately respond with the stored response.
+Ajax Replay is a simple way to allow you to use real api calls in your tests/specs, without paying the performance penalty.  If you are familiar with **[vcr](https://github.com/vcr/vcr)** for ruby, this is similar, but completely javascript/front end based.  Once Ajax Replay is loaded it takes over XMLHttpRequest and from then on will automatically cache all ajax calls and responses into localstorage.  Subsequent ajax calls that match the same method+url+params will immediately respond with the stored response.
 
 So in short, the first time you run a test it will hit the live server you were calling, but after that all responses are local and really fast.  What you might expect to see is that the first time running a test suite a particular test might take a few seconds (depending on api server response speed), but subsequent runs will take only milliseconds.
 
