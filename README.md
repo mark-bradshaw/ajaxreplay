@@ -6,7 +6,7 @@ Ajax Replay is a simple way to allow you to use real api calls in your tests/spe
 
 So in short, the first time you run a test it will hit the live server you were calling, but after that all responses are local and really fast.  What you might expect to see is that the first time running a test suite a particular test might take a few seconds (depending on api server response speed), but subsequent runs will take only milliseconds.
 
-This implementation is test harness agnostic.  I prefer **[jasmine](http://pivotal.github.io/jasmine/)** as a test suite, but Ajax Replay doesn't care if you use jasmine or not.  If you use **[require.js](http://requirejs.org/)** require will load first and get a handle on the XHR object, so none of your local scripts will end up cached by Ajax Replay.
+This implementation is test harness agnostic.  I prefer **[jasmine](http://pivotal.github.io/jasmine/)** as a test suite, but Ajax Replay doesn't care if you use jasmine or not.
 
 ## Performance
 
@@ -20,7 +20,7 @@ AjaxReplay assumes a modern browser environment.  For me, this means the availab
 
 ## Setup
 
-Setup is fairly trivial.  The only requirement is that you load Ajax Replay before any other libraries get a hold on the XMLHttpRequest object.  In practice this means making sure that Ajax Replay is the first script load, or if you use require.js, make sure that jquery or underscore or any other library that makes ajax calls have a dependency on Ajax Replay, so it loads up first.
+Setup is fairly trivial.  The only requirement is that you load Ajax Replay before any other libraries get a hold on the XMLHttpRequest object.  In practice this means making sure that Ajax Replay is the first script load, or if you use require.js, make sure that jquery or underscore or any other library that makes ajax calls have a dependency on Ajax Replay, so it loads up first.  If you use **[require.js](http://requirejs.org/)** require will load first and get a handle on the XHR object, so none of your local scripts will end up cached by Ajax Replay.
 
 That's it.  You don't need to do anything else.  Ajax Replay will take over all XHR functions and silently cache items as they are called.
 
