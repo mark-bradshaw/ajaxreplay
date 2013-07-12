@@ -26,4 +26,4 @@ That's it.  You don't need to do anything else.  Ajax Replay will take over all 
 
 ## Documentation
 
-For documentation see the docs folder.
+For documentation see the docs folder or http://mbradshawabs.github.io/ajaxreplay/docs/.
