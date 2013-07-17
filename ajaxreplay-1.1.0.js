@@ -57,7 +57,7 @@ XMLHttpRequest.prototype.send = function(params) {
   // We'll use this as a flag to note that the onreadystatechange has been called in the cache phase, and shouldn't be called again on the ajax phase.
   var onReadyCalled = false;
 
-  // CACHE PHASE: The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witness significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.
+  // CACHE PHASE: The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witnessed significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.
   if (!ajaxReplay.noCache && localStorage[this.cacheid]) {
     // The request is already stored in the cache.  Switch to a final readyState.
     this.readyState = 4;
