@@ -34,6 +34,7 @@
 <p>Ajax Replay is a simple way to allow you to use real api calls in your tests/specs, without paying the performance penalty.  If you are familiar with <strong><a href="https://github.com/vcr/vcr">vcr</a></strong> for ruby, this is similar, but completely javascript/front end based.  Once Ajax Replay is loaded it takes over XMLHttpRequest and from then on will automatically cache all ajax calls and responses into localstorage.  Subsequent ajax calls that match the same method+url+params will immediately respond with the stored response.</p>
 <p>So in short, the first time you run a test it will hit the live server you were calling, but after that all responses are local and really fast.  What you might expect to see is that the first time running a test suite a particular test might take a few seconds (depending on api server response speed), but subsequent runs will take only milliseconds.</p>
 <p>This implementation is test harness agnostic.  I prefer <strong><a href="http://pivotal.github.io/jasmine/">jasmine</a></strong> as a test suite, but Ajax Replay doesn&#39;t care if you use jasmine or not.  The only requirement is that you load Ajax Replay before any other libraries get a hold on the XMLHttpRequest object.  In practice this means making sure that Ajax Replay is the first script load, or if you use require.js, make sure that jquery or underscore or ... have a dependency on Ajax Replay.</p>
+<p>We&#39;re leaving around one itsy bitsy global ajaxReplay object.  This is done intentionally, so don&#39;t yell at me about keeping global clean.</p>
 
             </div>
             
@@ -227,7 +228,8 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>CACHE PHASE: The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I&#39;ve witness significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.</p>
+              <p>CACHE PHASE: If we are caching, and it is found in the localStorage cache...</p>
+<p>The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I&#39;ve witnessed significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (<em>ajaxReplay.clearCache()</em>).  The cache has no expiration date associated with each item, so they are stored permanently.</p>
 
             </div>
             
@@ -242,7 +244,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>The request is already stored in the cache.  Switch to a final readyState.</p>
+              <p>The request is already stored in the cache.  Switch to a final XHR readyState.</p>
 
             </div>
             
@@ -325,7 +327,7 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    !localStorage[<span class="keyword">this</span>.cacheid]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    !localStorage[<span class="keyword">this</span>.cacheid] ||</pre></div></div>
             
         </li>
         
@@ -340,9 +342,8 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    || ajaxReplay.refresh
-  ) {
-    console.log(<span class="string">'doing the ajax call'</span>);</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    ajaxReplay.refresh
+  ) {</pre></div></div>
             
         </li>
         
@@ -435,7 +436,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>and fire off a callback if one has been setup.</p>
+              <p>and fire off a callback if one has been setup AND it wasn&#39;t called already in the CACHE phase.</p>
 
             </div>
             

@@ -9,6 +9,8 @@
 // So in short, the first time you run a test it will hit the live server you were calling, but after that all responses are local and really fast.  What you might expect to see is that the first time running a test suite a particular test might take a few seconds (depending on api server response speed), but subsequent runs will take only milliseconds.
 
 // This implementation is test harness agnostic.  I prefer **[jasmine](http://pivotal.github.io/jasmine/)** as a test suite, but Ajax Replay doesn't care if you use jasmine or not.  The only requirement is that you load Ajax Replay before any other libraries get a hold on the XMLHttpRequest object.  In practice this means making sure that Ajax Replay is the first script load, or if you use require.js, make sure that jquery or underscore or ... have a dependency on Ajax Replay.
+
+// We're leaving around one itsy bitsy global ajaxReplay object.  This is done intentionally, so don't yell at me about keeping global clean.
 var ajaxReplay = {
 
   // If you want to disable Ajax Replay for some ajax calls, just set noCache to true.  When you are ready for caching again, set it back to false.
@@ -57,9 +59,11 @@ XMLHttpRequest.prototype.send = function(params) {
   // We'll use this as a flag to note that the onreadystatechange has been called in the cache phase, and shouldn't be called again on the ajax phase.
   var onReadyCalled = false;
 
-  // CACHE PHASE: The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witnessed significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.
+  // CACHE PHASE: If we are caching, and it is found in the localStorage cache...
+
+  // The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witnessed significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*ajaxReplay.clearCache()*).  The cache has no expiration date associated with each item, so they are stored permanently.
   if (!ajaxReplay.noCache && localStorage[this.cacheid]) {
-    // The request is already stored in the cache.  Switch to a final readyState.
+    // The request is already stored in the cache.  Switch to a final XHR readyState.
     this.readyState = 4;
     // Set the response status to 200 indicating all is well.
     this.status = 200;
@@ -75,11 +79,10 @@ XMLHttpRequest.prototype.send = function(params) {
   // AJAX PHASE: We send off an AJAX call to the original location in a couple of conditions...
   if (
     // Do the ajax call if it's not in the cache.
-    !localStorage[this.cacheid]
+    !localStorage[this.cacheid] ||
     // Or do it if the refresh flag is true so that the cache can get updated.
-    || ajaxReplay.refresh
+    ajaxReplay.refresh
   ) {
-    console.log('doing the ajax call');
     // Keep a record of this around for future reference.
     var me = this;
     // Pull up the original XHR object.
@@ -100,7 +103,7 @@ XMLHttpRequest.prototype.send = function(params) {
       me.status = xhr.status;
       me.responseText = xhr.responseText;
 
-      // and fire off a callback if one has been setup.
+      // and fire off a callback if one has been setup AND it wasn't called already in the CACHE phase.
       if (me.onreadystatechange && !onReadyCalled) {
         me.onreadystatechange();
       }
