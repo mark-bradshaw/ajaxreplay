@@ -14,6 +14,10 @@ In my experience using a localstorage cache for api calls results in very speedy
 
 If you add Ajax Replay to your tests and notice that your browser slows to a crawl, then you are likely making a LOT of unique api calls in your test, and ending up with a very full and fragmented localstorage.  You will need to change your tests, or set Ajax Replay to not cache on certain tests.  To do this set *ajaxReplay.noCache = true*.  This will force all calls out onto the network, and not cache the responses.  When you are ready for caching again, set it back to false.
 
+## Refreshing the Cache
+
+By default Ajax Replay will refresh the cache for you, all the time.  It will respond back from the cache immediately so that you get the speed improvements you need, but then it will go ahead and make the original remote api ajax request and update the localStorage cache when it gets a response.  I believe this is a good mix to get a win/win situation.  However this behavior is controllable.  If you don't want Ajax Replay to make any remote calls to refresh the cache set *ajaxReplay.refresh = false*.
+
 ## Requirements
 
 AjaxReplay assumes a modern browser environment.  For me, this means the availability of XMLHttpRequest and localStorage.  Basically, make sure you are running inside recent chrome, firefox or IE 8+.  IE prior to version 8 didn't have XMLHttpRequest or localStorage.
@@ -27,3 +31,7 @@ That's it.  You don't need to do anything else.  Ajax Replay will take over all 
 ## Documentation
 
 For documentation see the docs folder or http://mbradshawabs.github.io/ajaxreplay/docs/.
+
+## Changelog
+
+v 1.1.0 - Add auto-refresh behavior.

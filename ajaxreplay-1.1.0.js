@@ -1,4 +1,4 @@
-// Ajax Replay v1.0.0
+// Ajax Replay v1.1.0
 // https://github.com/mbradshawabs/ajaxreplay
 // http://mbradshawabs.github.io/ajaxreplay/
 
@@ -13,6 +13,9 @@ var ajaxReplay = {
 
   // If you want to disable Ajax Replay for some ajax calls, just set noCache to true.  When you are ready for caching again, set it back to false.
   noCache: false,
+
+  // By default Ajax Replay will always respond from cache, and THEN send off the original api call so that the local cache can get refreshed.  The cache response happens first, and quickly, so you still get a super fast response but you have the advantage of always getting your cache up to date.  It's a win/win.  If you don't want any sneaking api calls going out the back end then set refresh to false.
+  refresh: true,
 
   // First save a reference to the original XMLHttpRequest.  If for some reason you need to get back at the original XHR object in your testing, here it is.
   originalXHR: window.XMLHttpRequest
@@ -33,12 +36,15 @@ XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
   this.headers = [];
 
   // The cacheid that will be used will incorporate the http method and url.  We prepend 'ajaxreplay' to make sure that we can clear Ajax Replay objects back out of the cache at will.
-  this.cacheid = 'ajaxreplay'+this.method+this.url;
+  this.cacheid = 'ajaxreplay' + this.method + this.url;
 };
 
 // We'll also provide a simple method to set headers.  These are not considered part of the cacheid, so some cache collisions are possible if you expect different headers to provide different results.
 XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
-  this.headers.push({name: name, value: value});
+  this.headers.push({
+    name: name,
+    value: value
+  });
 };
 
 // **Send** is where all the interesting stuff happens.  Send will make the determination on whether to serve back a response from the cache (localStorage) or send off a network call.
@@ -48,7 +54,10 @@ XMLHttpRequest.prototype.send = function(params) {
     this.cacheid += params;
   }
 
-  // The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witness significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.
+  // We'll use this as a flag to note that the onreadystatechange has been called in the cache phase, and shouldn't be called again on the ajax phase.
+  var onReadyCalled = false;
+
+  // CACHE PHASE: The cache is stored in localStorage, for simplicity.  LocalStorage has a 5 meg limit, and I've witness significant slow down if you have a LocalStorage that is full.  When there are lots of little items, the browser will crawl.  If you start noticing this, you probably will want to clear LocalStorage out (*localStorage.clear()).  The cache has no expiration date associated with each item, so they are stored permanently.
   if (!ajaxReplay.noCache && localStorage[this.cacheid]) {
     // The request is already stored in the cache.  Switch to a final readyState.
     this.readyState = 4;
@@ -59,11 +68,18 @@ XMLHttpRequest.prototype.send = function(params) {
     // If the caller wants to get a callback (this is almost always the case) then fire off the callback function.
     if (this.onreadystatechange) {
       this.onreadystatechange.call(this);
+      onReadyCalled = true;
     }
   }
 
-  // If the response has not been previously cached, then we send off an AJAX call to the original location.
-  else {
+  // AJAX PHASE: We send off an AJAX call to the original location in a couple of conditions...
+  if (
+    // Do the ajax call if it's not in the cache.
+    !localStorage[this.cacheid]
+    // Or do it if the refresh flag is true so that the cache can get updated.
+    || ajaxReplay.refresh
+  ) {
+    console.log('doing the ajax call');
     // Keep a record of this around for future reference.
     var me = this;
     // Pull up the original XHR object.
@@ -73,25 +89,25 @@ XMLHttpRequest.prototype.send = function(params) {
 
     // If any custom headers were set on Ajax Replay, set them on the XHR object.
     if (this.headers.length > 0) {
-      for (var i=0, len=this.headers.length; i<len; i++) {
+      for (var i = 0, len = this.headers.length; i < len; i++) {
         xhr.setRequestHeader(this.headers[i].name, this.headers[i].value);
       }
     }
 
-    // Now look for state chagne events.  We ignore anything that isn't readyState 4 and status 200.  We only cache those.  But we always note any state and status changes internally...
+    // Now look for state change events.  We ignore anything that isn't readyState 4 and status 200.  We only cache those.  But we always note any state and status changes internally...
     xhr.onreadystatechange = function() {
       me.readyState = xhr.readyState;
       me.status = xhr.status;
       me.responseText = xhr.responseText;
 
+      // and fire off a callback if one has been setup.
+      if (me.onreadystatechange && !onReadyCalled) {
+        me.onreadystatechange();
+      }
+
       // if we finished (state = 4) with a 200 status and caching is enabled, save to cache.
       if (!ajaxReplay.noCache && me.readyState === 4 && me.status === 200) {
         localStorage[me.cacheid] = me.responseText;
-      }
-
-      // and fire off a callback if one has been setup.
-      if (me.onreadystatechange) {
-        me.onreadystatechange();
       }
     };
 
