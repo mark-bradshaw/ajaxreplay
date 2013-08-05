@@ -35,4 +35,5 @@ For documentation see the docs folder or http://mbradshawabs.github.io/ajaxrepla
 ## Changelog
 
 v 1.1.1 - Bug fix.  Was setting status before it was available. 
+
 v 1.1.0 - Add auto-refresh behavior.
