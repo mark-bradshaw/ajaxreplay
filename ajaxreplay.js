@@ -1,6 +1,6 @@
 // Ajax Replay v1.1.1
-// https://github.com/mbradshawabs/ajaxreplay
-// http://mbradshawabs.github.io/ajaxreplay/
+// https://github.com/mark-bradshaw/ajaxreplay
+// http://mark-bradshaw.github.io/ajaxreplay/
 
 // If you prefer to use live api calls in your javascript based tests, Ajax Replay is for you.  (Also, it can be a real simple caching layer for a web app if you are only doing reads.)  Philosophically I prefer to use live api data in my tests so that if the api responses change I can still rest assured that my application will continue to work.  Ideally api responses shouldn't change, but in the real world that is seldom the case.  Accidents happen.
 
