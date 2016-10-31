@@ -6,7 +6,7 @@ Ajax Replay is a simple way to allow you to use real api calls in your tests/spe
 
 So in short, the first time you run a test it will hit the live server you were calling, but after that all responses are local and really fast.  What you might expect to see is that the first time running a test suite a particular test might take a few seconds (depending on api server response speed), but subsequent runs will take only milliseconds.
 
-This implementation is test harness agnostic.  I prefer **[jasmine](http://pivotal.github.io/jasmine/)** as a test suite, but Ajax Replay doesn't care if you use jasmine or not.
+This implementation is test harness agnostic.  I prefer **[jasmine](http://jasmine.github.io/)** as a test suite, but Ajax Replay doesn't care if you use jasmine or not.
 
 ## Performance
 
